@@ -1,0 +1,10 @@
+version: '3'
+services:
+  nknmetricmransmitter:
+    restart: always
+    build: .
+    container_name: nknMetricTransmitter
+    environment:
+      NKNPORT: 30003
+      NKNIP: 0.0.0.0
+      TARGETPUBKEY: "NKN PUBLIC KEY THAT NEEDS TO RECEIVE THE METRICS"
