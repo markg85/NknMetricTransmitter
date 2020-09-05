@@ -3,6 +3,7 @@ services:
   nknmetricmransmitter:
     restart: always
     build: .
+    network_mode: bridge
     container_name: nknMetricTransmitter
     environment:
       NKNPORT: 30003
