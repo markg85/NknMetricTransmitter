@@ -86,9 +86,9 @@ try {
         } catch (e) {
             if ('code' in e) {
                 if (e.code == -45024) {
-                    returnObj.state = 2; // GENERATING ID
+                    returnObj.state = 2; // PRUNING
                 } else if (e.code == -45022) {
-                    returnObj.state = 3; // PRUNING
+                    returnObj.state = 3; // GENERATING ID
                 }
                 
                 try {
