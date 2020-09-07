@@ -1,6 +1,7 @@
 import jsonrpc from 'JSONRpc'
 import fs from 'fs';
 import nkn from 'nkn-sdk';
+import publicIp from 'public-ip'
 import WebSocket from 'ws';
 
 // NKNIP The IP of the NKN node.
@@ -53,17 +54,52 @@ try {
         seed: wallet.getSeed()
     });
 
+    // Get this node's public IP
+    const ip = await publicIp.v4();
+
     client.shouldReconnect = true;
+    let returnObj = {
+        host: ip,
+        uptime: 0,
+        height: 0,
+        relayMessageCount: 0,
+        time: Math.floor(Date.now() / 1000),
+        state: 0
+    };
 
     setInterval(async function () {
         try {
             client.ws.ping && client.ws.ping();
             let nodeState = await jsonrpcClient.callPromise('getnodestate', {})
+
+            if (nodeState.syncState == 'PERSIST_FINISHED') {
+                returnObj.state = 1; // PERSIST_FINISHED or: ALL OK.
+            }
+
+            returnObj.uptime = nodeState.uptime;
+            returnObj.relayMessageCount = nodeState.relayMessageCount;
+            returnObj.height = nodeState.height;
+            returnObj.time = nodeState.currTimeStamp;
             
             // You should define the TARGETPUBKEY environment variable!
-            await client.send(process.env.TARGETPUBKEY, JSON.stringify(nodeState), { msgHoldingSeconds: 0 });
+            await client.send(process.env.TARGETPUBKEY, JSON.stringify(returnObj), { msgHoldingSeconds: 0 });
         } catch (e) {
-            //console.warn('error:', e);
+            if ('code' in e) {
+                if (e.code == -45024) {
+                    returnObj.state = 2; // GENERATING ID
+                } else if (e.code == -45022) {
+                    returnObj.state = 3; // PRUNING
+                }
+                
+                try {
+                    await client.send(process.env.TARGETPUBKEY, JSON.stringify(returnObj), { msgHoldingSeconds: 0 });
+                } catch (error) {
+                    console.log('Inner error:', error)
+                }
+            } else {
+                console.warn('error:', e);
+            }
+
         }
     }, pingInterval);
 
