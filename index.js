@@ -60,11 +60,12 @@ try {
     client.shouldReconnect = true;
     let returnObj = {
         host: ip,
+        hostname: process.env.HOST_HOSTNAME,
         uptime: 0,
         height: 0,
         relayMessageCount: 0,
         time: Math.floor(Date.now() / 1000),
-        state: 0
+        state: 1
     };
 
     setInterval(async function () {
@@ -73,7 +74,7 @@ try {
             let nodeState = await jsonrpcClient.callPromise('getnodestate', {})
 
             if (nodeState.syncState == 'PERSIST_FINISHED') {
-                returnObj.state = 1; // PERSIST_FINISHED or: ALL OK.
+                returnObj.state = 0; // ErrNoError : https://github.com/nknorg/nkn/blob/master/api/common/errcode.go
             }
 
             returnObj.uptime = nodeState.uptime;
