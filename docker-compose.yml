@@ -3,6 +3,7 @@ services:
   nknmetricmransmitter:
     restart: always
     build: .
+    image: nknmetricmransmitter
     network_mode: bridge
     container_name: nknMetricTransmitter
     environment:
